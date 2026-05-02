@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+}
+
+group = 'io.github.dingcouqui'
+version = '1.0.0'
+
+repositories {
+    // 腾讯云镜像（在国内优先级最高，国外可回退）
+    maven {
+        name = "TencentCloud"
+        url = "https://mirrors.cloud.tencent.com/nexus/repository/maven-public/"
+    }
+    // 原有仓库保持不变
+    mavenCentral()
+    maven {
+        name = "papermc"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+}
+
+dependencies {
+    compileOnly "io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT"
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+}
+
+processResources {
+    filesMatching("plugin.yml") {
+        expand(project.properties)
+    }
+}

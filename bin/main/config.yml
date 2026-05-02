@@ -1,0 +1,4 @@
+language: zh_cn
+max_stack_multiplier: 54
+hud_enabled: true
+disabled_materials: []

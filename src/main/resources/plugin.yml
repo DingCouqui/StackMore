@@ -1,0 +1,30 @@
+name: StackMore
+version: "1.0.0"
+main: io.github.dingcouqui.stackmore.StackMorePlugin
+api-version: "1.21"
+description: Allows stacking of blocks beyond 64 with special oversized stacks.
+folia-supported: false
+commands:
+  stack:
+    description: Create or add to a special stack
+    usage: /<command> [amount|all]
+  stackto:
+    description: Fill special stack to a specific amount
+    usage: /<command> <amount>
+  unstack:
+    description: Unstack items from special stack
+    usage: /<command> [amount|all]
+  unstackto:
+    description: Unstack to a specific amount
+    usage: /<command> <amount>
+  stackinfo:
+    description: Show info about held special stack
+    usage: /<command>
+  stackmore:
+    description: Admin commands for StackMore
+    usage: /<command> reload
+permissions:
+  stackmore.use:
+    default: true
+  stackmore.admin:
+    default: op
