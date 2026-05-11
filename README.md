@@ -80,7 +80,7 @@ Source: [GitHub Repository](https://github.com/DingCouqui/StackMore)
 > architecture design, and documentation review.
 
 ### License
-This project is licensed under the **GNU General Public License v2.0**.  
+This project is licensed under the **GNU General Public License v3.0**.  
 See [LICENSE](LICENSE) for the full text.
 
 ---
@@ -158,7 +158,7 @@ A：修改 `config.yml` 的 `language` 为 `en_us` 或自定义文件名，并�
 项目地址：[GitHub](https://github.com/DingCouqui/StackMore)
 
 ### 许可证
-本项目使用 **GNU General Public License v2.0** 开源。  
+本项目使用 **GNU General Public License v3.0** 开源。  
 完整许可证文本请见 [LICENSE](LICENSE) 文件。
 
 ---
