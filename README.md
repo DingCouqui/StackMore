@@ -76,6 +76,9 @@ A: Set `language` in `config.yml` to `en_us` (or any custom filename) and place 
 Build with Gradle: `gradle build` → Jar in `build/libs/`.  
 Source: [GitHub Repository](https://github.com/DingCouqui/StackMore)
 
+> **Note:** This plugin was developed with AI assistance, including code generation,
+> architecture design, and documentation review.
+
 ### License
 This project is licensed under the **GNU General Public License v2.0**.  
 See [LICENSE](LICENSE) for the full text.
