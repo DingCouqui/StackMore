@@ -9,6 +9,18 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * {@code /stackto <amount>} 命令执行器。
+ *
+ * <p>将手持特殊堆叠物品填充到指定数量。与 {@code /stack} 不同，
+ * 此命令<strong>必须</strong>手持已有的特殊堆叠才能使用。</p>
+ *
+ * <p>权限分化：</p>
+ * <ul>
+ *   <li><b>普通玩家</b> — 从背包中吸收同种物品补足差额</li>
+ *   <li><b>管理员</b> — 直接设置数量，无需消耗物品</li>
+ * </ul>
+ */
 public class StackToCommand implements CommandExecutor {
 
     @Override

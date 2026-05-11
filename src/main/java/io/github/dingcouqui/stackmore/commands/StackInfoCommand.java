@@ -13,6 +13,13 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
+/**
+ * {@code /stackinfo} 命令执行器。
+ *
+ * <p>查看手持特殊堆叠物品的详细信息，包括物品翻译名、唯一 UUID、
+ * 当前数量 / 最大容量、创建者名称和 UUID。输出格式由语言文件中的
+ * {@code info_format} 列表定义，支持占位符和颜色代码。</p>
+ */
 public class StackInfoCommand implements CommandExecutor {
 
     @Override
@@ -37,7 +44,7 @@ public class StackInfoCommand implements CommandExecutor {
             format = List.of("&6Info: &e%amount%");
         }
 
-        // 获取可翻译物品名并转为传统颜色格式
+        // 通过 Adventure translatable 获取客户端可翻译的物品名，再转换回传统颜色格式输出
         Component itemNameComp = Component.translatable(hand.getType().translationKey());
         String itemName = LegacyComponentSerializer.legacySection().serialize(itemNameComp);
 

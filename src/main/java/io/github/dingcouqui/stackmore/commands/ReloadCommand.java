@@ -6,6 +6,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+/**
+ * {@code /stackmore reload} 命令执行器。
+ *
+ * <p>重载插件的 {@code config.yml} 和语言文件，无需重启服务器。
+ * 需要 {@code stackmore.admin} 权限。</p>
+ */
 public class ReloadCommand implements CommandExecutor {
 
     @Override

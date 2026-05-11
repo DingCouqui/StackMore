@@ -24,3 +24,7 @@ Thumbs.db
 # Plugin test server (optional)
 test-server/
 run/
+
+# DeepSeek TUI
+.deepseek/
+session_*.json

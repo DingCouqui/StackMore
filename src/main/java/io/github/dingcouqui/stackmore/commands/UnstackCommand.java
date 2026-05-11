@@ -12,6 +12,18 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
+/**
+ * {@code /unstack [amount|all]} 命令执行器。
+ *
+ * <p>从手持特殊堆叠中解压物品到背包。支持三种模式：</p>
+ * <ul>
+ *   <li><b>无参数</b> — 尽量解压到背包，放不下的留在手中</li>
+ *   <li><b>指定数量</b>（小于当前总量） — 解压指定数量，剩余留在手中</li>
+ *   <li><b>指定数量 ≥ 当前 / "all"</b> — 全部解压，放不下的掉落在地上</li>
+ * </ul>
+ *
+ * <p>解压后若总量 ≤ 64，特殊堆叠会自动退化为普通物品堆叠。</p>
+ */
 public class UnstackCommand implements CommandExecutor {
 
     @Override
@@ -66,13 +78,27 @@ public class UnstackCommand implements CommandExecutor {
     }
 
     /**
-     * 从特殊堆叠中解压物品。
+     * 从特殊堆叠中解压物品到玩家背包。
+     *
+     * <p>放置策略：</p>
+     * <ol>
+     *   <li>优先补满已有同种非特殊堆叠的格子（≤64）</li>
+     *   <li>再放入空格子（每次生成至多 64 个）</li>
+     *   <li>若仍有剩余且允许掉落，则掉落在地上</li>
+     * </ol>
+     *
+     * <p>解压完成后更新手持物品：</p>
+     * <ul>
+     *   <li>剩余数量 ≤ 0 → 清空手持</li>
+     *   <li>剩余数量 ≤ 64 → 退化为普通堆叠</li>
+     *   <li>剩余数量 &gt; 64 → 保留特殊堆叠并更新数量</li>
+     * </ul>
      *
      * @param player         玩家
      * @param hand           当前特殊堆叠物品
      * @param currentAmount  特殊堆叠内的总数
      * @param toExtract      本次需要解压的数量
-     * @param dropExcess     如果背包满，多出的物品是否掉落
+     * @param dropExcess     如果背包满，多出的物品是否掉落在地
      */
     public static void unstack(Player player, ItemStack hand, int currentAmount, int toExtract, boolean dropExcess) {
         Material material = hand.getType();
@@ -123,7 +149,7 @@ public class UnstackCommand implements CommandExecutor {
         if (newAmount <= 0) {
             player.getInventory().setItemInMainHand(null);
         } else if (newAmount <= 64) {
-            // 转为普通堆叠
+            // 转为普通堆叠，保留原始自定义显示名称
             ItemStack normal = new ItemStack(material, newAmount);
             ItemMeta specialMeta = hand.getItemMeta();
             if (specialMeta != null && specialMeta.hasDisplayName()) {
