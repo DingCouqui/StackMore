@@ -11,6 +11,7 @@ info_format:
   - "&fUUID: &7%uuid%"
   - "&fNombre: &b%amount%&7/&b%max%"
   - "&fPropriétaire: &e%owner% &7(%owner_uuid%)"
+lore_format: "&eNombre: &b%amount%"
 cannot_split: ""
 material_disabled: "&cCet objet ne peut pas être empilé."
 no_permission: "&cVous n'avez pas la permission."

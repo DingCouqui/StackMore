@@ -11,6 +11,7 @@ info_format:
   - "&fUUID: &7%uuid%"
   - "&fКоличество: &b%amount%&7/&b%max%"
   - "&fВладелец: &e%owner% &7(%owner_uuid%)"
+lore_format: "&eКоличество: &b%amount%"
 cannot_split: ""
 material_disabled: "&cЭтот материал нельзя складывать."
 no_permission: "&cУ вас нет прав."

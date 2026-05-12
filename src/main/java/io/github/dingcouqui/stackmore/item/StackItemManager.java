@@ -1,6 +1,8 @@
 package io.github.dingcouqui.stackmore.item;
 
 import io.github.dingcouqui.stackmore.StackMorePlugin;
+import io.github.dingcouqui.stackmore.config.MessageManager;
+import io.github.dingcouqui.stackmore.util.TextUtils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -146,8 +148,10 @@ public class StackItemManager {
      * 更新物品的 lore 显示当前数量。
      */
     private static void updateLore(ItemMeta meta, int amount) {
+        MessageManager msg = StackMorePlugin.getMessageManager();
+        String line = TextUtils.colorize(msg.get("lore_format", "%amount%", String.valueOf(amount)));
         List<String> lore = new ArrayList<>();
-        lore.add("§e数量: §b" + amount);
+        lore.add(line);
         meta.setLore(lore);
     }
 

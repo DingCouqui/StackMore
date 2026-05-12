@@ -11,6 +11,7 @@ info_format:
   - "&fUUID: &7%uuid%"
   - "&fCantidad: &b%amount%&7/&b%max%"
   - "&fDueño: &e%owner% &7(%owner_uuid%)"
+lore_format: "&eCantidad: &b%amount%"
 cannot_split: ""
 material_disabled: "&cEste material no se puede apilar."
 no_permission: "&cNo tienes permiso."

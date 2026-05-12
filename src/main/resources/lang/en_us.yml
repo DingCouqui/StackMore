@@ -11,6 +11,7 @@ info_format:
   - "&fUUID: &7%uuid%"
   - "&fAmount: &b%amount%&7/&b%max%"
   - "&fOwner: &e%owner% &7(%owner_uuid%)"
+lore_format: "&eAmount: &b%amount%"
 cannot_split: ""
 material_disabled: "&cThis material cannot be stacked."
 no_permission: "&cYou don't have permission."
