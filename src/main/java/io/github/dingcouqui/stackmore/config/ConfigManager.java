@@ -51,7 +51,7 @@ public class ConfigManager {
         }
         config = YamlConfiguration.loadConfiguration(configFile);
 
-        language = config.getString("language", "zh_cn");
+        language = config.getString("language", "en_us");
         maxStackMultiplier = config.getInt("max_stack_multiplier", 54);
         hudEnabled = config.getBoolean("hud_enabled", true);
 

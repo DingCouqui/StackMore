@@ -10,7 +10,8 @@ import java.util.List;
  * 多语言消息管理器。
  *
  * <p>根据配置中的 {@code language} 设置加载对应的 YAML 语言文件。
- * 首次启动时自动将 jar 内的默认语言文件（{@code zh_cn.yml}、{@code en_us.yml}）
+ * 首次启动时自动将 jar 内的默认语言文件（{@code zh_cn.yml}、{@code en_us.yml}、
+ * {@code fr_fr.yml}、{@code es_es.yml}、{@code ja_jp.yml}、{@code ru_ru.yml}）
  * 复制到插件数据文件夹的 {@code lang/} 子目录。</p>
  *
  * <p>消息支持 {@code %placeholder%} 格式的占位符替换，
@@ -38,11 +39,15 @@ public class MessageManager {
         // 从 jar 资源中提取默认语言文件（仅在目标不存在时）
         saveDefaultLang("zh_cn.yml");
         saveDefaultLang("en_us.yml");
+        saveDefaultLang("fr_fr.yml");
+        saveDefaultLang("es_es.yml");
+        saveDefaultLang("ja_jp.yml");
+        saveDefaultLang("ru_ru.yml");
 
         File langFile = new File(langFolder, language + ".yml");
         if (!langFile.exists()) {
-            plugin.getLogger().warning("Language file " + language + ".yml not found, falling back to zh_cn.yml");
-            langFile = new File(langFolder, "zh_cn.yml");
+            plugin.getLogger().warning("Language file " + language + ".yml not found, falling back to en_us.yml");
+            langFile = new File(langFolder, "en_us.yml");
         }
         messages = YamlConfiguration.loadConfiguration(langFile);
     }
