@@ -45,6 +45,8 @@ public class StackMorePlugin extends JavaPlugin {
 
         // Register commands
         getCommand("stack").setExecutor(new StackCommand());
+        getCommand("sm").setExecutor(new StackCommand());
+        getCommand("stk").setExecutor(new StackCommand());
         getCommand("stackto").setExecutor(new StackToCommand());
         getCommand("unstack").setExecutor(new UnstackCommand());
         getCommand("unstackto").setExecutor(new UnstackToCommand());

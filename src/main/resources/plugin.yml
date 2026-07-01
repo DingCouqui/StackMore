@@ -1,5 +1,5 @@
 name: StackMore
-version: "1.0.0"
+version: "${version}"
 main: io.github.dingcouqui.stackmore.StackMorePlugin
 api-version: "1.21"
 description: Allows stacking of blocks beyond 64 with special oversized stacks.
@@ -7,6 +7,12 @@ folia-supported: false
 commands:
   stack:
     description: Create or add to a special stack
+    usage: /<command> [amount|all]
+  sm:
+    description: Alias for /stack
+    usage: /<command> [amount|all]
+  stk:
+    description: Alias for /stack
     usage: /<command> [amount|all]
   stackto:
     description: Fill special stack to a specific amount
