@@ -17,4 +17,5 @@ material_disabled: "&cЭтот материал нельзя складыват�
 no_permission: "&cУ вас нет прав."
 not_holding_special: "&cВы не держите спец. стек."
 not_holding_block: "&cВы должны держать блок."
+external_item_rejected: "&cЭтот предмет помечен другим плагином и не может быть сложен."
 reload_success: "&aКонфигурация перезагружена."

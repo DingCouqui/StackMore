@@ -50,6 +50,12 @@ public class StackCommand implements CommandExecutor {
             return true;
         }
 
+        // 拒绝被第三方插件（如 Infinite-Blocks）PDC 标记的物品
+        if (StackItemManager.hasExternalPDCTags(hand)) {
+            player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("external_item_rejected")));
+            return true;
+        }
+
         int maxSize = StackMorePlugin.getConfigManager().getMaxStackSize();
         boolean isAdmin = player.hasPermission("stackmore.admin");
 
@@ -128,7 +134,9 @@ public class StackCommand implements CommandExecutor {
         for (int i = 0; i < 36; i++) {
             if (i == inv.getHeldItemSlot()) continue;
             ItemStack item = inv.getItem(i);
-            if (item != null && item.getType() == material && !StackItemManager.isSpecialStack(item)) {
+            if (item != null && item.getType() == material
+                    && !StackItemManager.isSpecialStack(item)
+                    && !StackItemManager.hasExternalPDCTags(item)) {
                 int available = item.getAmount();
                 int take = Math.min(needed - absorbed, available);
                 item.setAmount(available - take);
@@ -139,7 +147,9 @@ public class StackCommand implements CommandExecutor {
         }
         if (absorbed < needed) {
             ItemStack off = inv.getItemInOffHand();
-            if (off.getType() == material && !StackItemManager.isSpecialStack(off)) {
+            if (off != null && off.getType() == material
+                    && !StackItemManager.isSpecialStack(off)
+                    && !StackItemManager.hasExternalPDCTags(off)) {
                 int take = Math.min(needed - absorbed, off.getAmount());
                 off.setAmount(off.getAmount() - take);
                 if (off.getAmount() <= 0) inv.setItemInOffHand(null);

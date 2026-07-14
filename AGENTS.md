@@ -7,14 +7,14 @@
 ## Build & run
 
 ```bash
-gradle build        # produces build/libs/StackMore-1.0.1.jar
+gradle build        # produces build/libs/StackMore-{version}.jar
 gradle clean        # deletes build/
 gradle wrapper      # generate gradlew (no wrapper committed)
 ```
 
 - **No Gradle wrapper is committed.** If `gradlew` is missing, install Gradle locally and run `gradle wrapper` first.
 - Java 21 toolchain is enforced in `build.gradle`.
-- `processResources` is configured to expand `${version}` from `build.gradle` into `plugin.yml`, but the current `plugin.yml` hardcodes `version: "1.0.0"` instead of using `${version}` — the built JAR always reports `1.0.0` regardless of `build.gradle` version. If you bump the version, update **both** `build.gradle` and `plugin.yml`, or switch plugin.yml to `${version}`.
+- `processResources` expands `${version}` from `build.gradle` into `plugin.yml`. Both must be in sync — `plugin.yml` already uses `version: "${version}"`.
 
 ## Commands (for verification)
 
@@ -22,7 +22,7 @@ gradle wrapper      # generate gradlew (no wrapper committed)
 |---|---|
 | Build | `gradle build` |
 | Clean | `gradle clean` |
-| Output JAR | `build/libs/StackMore-1.0.1.jar` |
+| Output JAR | `build/libs/StackMore-{version}.jar` (currently `1.0.2`) |
 
 ## Testing
 
@@ -36,7 +36,7 @@ gradle wrapper      # generate gradlew (no wrapper committed)
 
 ### Plugin entrypoint
 `StackMorePlugin.java` — standard `JavaPlugin`. In `onEnable()`:
-- Registers **6 commands** (`stack`, `stackto`, `unstack`, `unstackto`, `stackinfo`, `stackmore`) via `getCommand().setExecutor()`
+- Registers commands: `stack` (+ aliases `sm`, `stk`), `stackto`, `unstack`, `unstackto`, `stackinfo`, `stackmore` via `getCommand().setExecutor()`
 - Registers **2 event listeners**: `BlockListener`, `InventoryListener`
 - Starts **1 repeating HUD task**: `HudTask` (BukkitRunnable, 20 tick period)
 
@@ -45,7 +45,7 @@ gradle wrapper      # generate gradlew (no wrapper committed)
 ### PDC-based item stacking
 The core trick: items use `PersistentDataContainer` (NBT) to store real stack counts while keeping the vanilla `amount` field at 1. This bypasses the client's 64-stack limit. Key class: `StackItemManager.java`.
 
-PDC keys stored per-item (`StackItemManager.java:44-47`):
+PDC keys stored per-item (`StackItemManager.java:42-48`):
 - `stack_uuid` → `PersistentDataType.STRING` — unique stack identifier
 - `stack_amount` → `PersistentDataType.INTEGER` — current count
 - `stack_owner_name` → `PersistentDataType.STRING` — creator name
@@ -61,12 +61,17 @@ PDC keys stored per-item (`StackItemManager.java:44-47`):
 
 4. **Crafting GUI restrictions** (`InventoryListener.java`): Six container types block special stacks — `WORKBENCH`, `ANVIL`, `GRINDSTONE`, `SMITHING`, `ENCHANTING`, `CRAFTING` (player 2x2 grid). Cursor-clicks, drags, shift-clicks, and double-click collect involving special stacks in these GUIs are all cancelled; only `PICKUP_ALL`, `PLACE_ALL`, `SWAP_WITH_CURSOR`, `HOTBAR_SWAP`, and `MOVE_TO_OTHER_INVENTORY` are allowed.
 
+5. **Third-party PDC protection** (`StackItemManager.java:hasExternalPDCTags()`): Before absorbing items during `/stack` or `/stackto`, and before converting a held item into a special stack via `/stack`, items are checked for PDC keys from external plugins (namespaces other than `minecraft` or `stackmore`). This prevents accidental destruction of specially-tagged items from plugins like Infinite-Blocks. Applied in three locations:
+   - `StackCommand.onCommand()` — rejects held items with external PDC tags
+   - `StackCommand.absorbFromPlayer()` — skips external-tagged items during absorption
+   - `StackCommandHelper.absorbFromPlayer()` — same (shared by `/stackto` path)
+
 ### Config & messages
 
 - `ConfigManager.java` loads `plugins/StackMore/config.yml`; `MessageManager.java` loads `plugins/StackMore/lang/{language}.yml`.
 - `config.yml` in `src/main/resources/` is the default — it gets copied on first load.
 - Default language is **`en_us`** (`config.yml` default + `ConfigManager.java` fallback). If the configured language file doesn't exist, `MessageManager.java` falls back to **`en_us.yml`**.
-- 8 built-in language files under `src/main/resources/lang/`: `zh_cn.yml`, `en_us.yml`, `de_de.yml`, `ru_ru.yml`, `es_es.yml`, `fr_fr.yml`, `ja_jp.yml`.
+- 7 built-in language files under `src/main/resources/lang/`: `zh_cn.yml`, `en_us.yml`, `de_de.yml`, `ru_ru.yml`, `es_es.yml`, `fr_fr.yml`, `ja_jp.yml`.
 - `config.yml` settings: `language`, `max_stack_multiplier` (max stack = 64 × multiplier), `hud_enabled`, `disabled_materials` (additional block materials to reject).
 
 ## Conventions
@@ -83,6 +88,15 @@ PDC keys stored per-item (`StackItemManager.java:44-47`):
 
 ## Git
 
-- Repo: `github.com/DingCouqui/StackMore`, single branch `main`.
-- `.deepseek/` and `session_*.json` are gitignored (AI assistant traces).
+- Repo: `github.com/DingCouqui/StackMore`, branches: `main` (upstream), `BilicraftVersion` (customised).
+- `.deepseek/`, `.omo/`, `Reference/`, and `session_*.json` are gitignored (AI assistant traces).
 - `gradle/wrapper/gradle-wrapper.jar` is whitelisted in `.gitignore` (`!gradle/wrapper/gradle-wrapper.jar`), but the wrapper directory doesn't exist yet.
+
+## Local build notes
+
+- Gradle is **not** in PATH. Available extracted distributions in `~/.gradle/wrapper/dists/`: `gradle-8.8`, `gradle-9.5.0`, `gradle-9.6.1`.
+- Java 21 is at `C:\Program Files\Microsoft\jdk-21.0.10.7-hotspot`. Set `JAVA_HOME` before running Gradle:
+  ```powershell
+  $env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-21.0.10.7-hotspot"
+  & "C:\Users\Ding_\.gradle\wrapper\dists\gradle-8.8-bin\4u0rgm4geyrm56fyhoco0c9in\gradle-8.8\bin\gradle.bat" build
+  ```

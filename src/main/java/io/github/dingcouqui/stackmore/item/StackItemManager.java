@@ -13,6 +13,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -57,6 +58,32 @@ public class StackItemManager {
         if (item == null || item.getType().isAir()) return false;
         ItemMeta meta = item.getItemMeta();
         return meta != null && meta.getPersistentDataContainer().has(KEY_UUID, PersistentDataType.STRING);
+    }
+
+    /**
+     * Check if an item carries PDC data injected by third-party plugins.
+     *
+     * <p>An item is considered "external" if its PersistentDataContainer
+     * contains any key whose namespace is neither {@code "minecraft"}
+     * (vanilla) nor {@code "stackmore"} (this plugin). This prevents
+     * absorption of specially-tagged items (e.g. infinite blocks) during
+     * {@code /stack} operations.</p>
+     *
+     * @param item the item to check
+     * @return {@code true} if any external PDC key is present
+     */
+    public static boolean hasExternalPDCTags(ItemStack item) {
+        if (item == null || item.getType().isAir()) return false;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return false;
+        Set<NamespacedKey> keys = meta.getPersistentDataContainer().getKeys();
+        for (NamespacedKey key : keys) {
+            String ns = key.getNamespace();
+            if (!ns.equals("minecraft") && !ns.equals("stackmore")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -36,7 +36,9 @@ public class StackCommandHelper {
         for (int i = 0; i < 36; i++) {
             if (i == inv.getHeldItemSlot()) continue;
             ItemStack item = inv.getItem(i);
-            if (item != null && item.getType() == material && !StackItemManager.isSpecialStack(item)) {
+            if (item != null && item.getType() == material
+                    && !StackItemManager.isSpecialStack(item)
+                    && !StackItemManager.hasExternalPDCTags(item)) {
                 int take = Math.min(needed - absorbed, item.getAmount());
                 item.setAmount(item.getAmount() - take);
                 if (item.getAmount() <= 0) inv.clear(i);
@@ -47,7 +49,9 @@ public class StackCommandHelper {
 
         if (absorbed < needed) {
             ItemStack off = inv.getItemInOffHand();
-            if (off != null && off.getType() == material && !StackItemManager.isSpecialStack(off)) {
+            if (off != null && off.getType() == material
+                    && !StackItemManager.isSpecialStack(off)
+                    && !StackItemManager.hasExternalPDCTags(off)) {
                 int take = Math.min(needed - absorbed, off.getAmount());
                 off.setAmount(off.getAmount() - take);
                 if (off.getAmount() <= 0) inv.setItemInOffHand(null);
