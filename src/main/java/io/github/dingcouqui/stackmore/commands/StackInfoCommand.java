@@ -2,6 +2,7 @@ package io.github.dingcouqui.stackmore.commands;
 
 import io.github.dingcouqui.stackmore.StackMorePlugin;
 import io.github.dingcouqui.stackmore.item.StackItemManager;
+import io.github.dingcouqui.stackmore.util.CommandUtils;
 import io.github.dingcouqui.stackmore.util.TextUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -24,20 +25,11 @@ public class StackInfoCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players.");
-            return true;
-        }
-        if (!player.hasPermission("stackmore.use")) {
-            player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("no_permission")));
-            return true;
-        }
+        Player player = CommandUtils.validatePlayerWithPermission(sender, "stackmore.use");
+        if (player == null) return true;
 
-        ItemStack hand = player.getInventory().getItemInMainHand();
-        if (!StackItemManager.isSpecialStack(hand)) {
-            player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("not_holding_special")));
-            return true;
-        }
+        ItemStack hand = CommandUtils.getHeldSpecialStack(player);
+        if (hand == null) return true;
 
         List<String> format = StackMorePlugin.getMessageManager().getStringList("info_format");
         if (format.isEmpty()) {

@@ -2,7 +2,6 @@ package io.github.dingcouqui.stackmore.util;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.ChatColor;
 
 /**
  * 文本工具类。
@@ -18,14 +17,14 @@ public class TextUtils {
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacyAmpersand();
 
     /**
-     * 将 {@code &} 前缀的颜色代码转为 Minecraft 原生颜色字符（§）。
+     * 将 {@code &} 前缀的颜色代码转为 Adventure Component。
      *
      * @param text 含 {@code &} 颜色代码的原始文本
-     * @return 转换后的彩色字符串
+     * @return Adventure Component，null 输入返回空 Component
      */
-    public static String colorize(String text) {
-        if (text == null) return "";
-        return ChatColor.translateAlternateColorCodes('&', text);
+    public static Component colorize(String text) {
+        if (text == null) return Component.empty();
+        return LEGACY.deserialize(text);
     }
 
     /**
@@ -39,12 +38,13 @@ public class TextUtils {
     }
 
     /**
-     * 去除字符串中的所有 Minecraft 颜色代码。
+     * 去除字符串中的所有 Minecraft 颜色代码（{@code &} 和 {@code §}）。
      *
      * @param text 含颜色代码的字符串
      * @return 纯文本
      */
     public static String stripColor(String text) {
-        return ChatColor.stripColor(text);
+        if (text == null) return "";
+        return text.replaceAll("(?i)[&§][0-9a-fk-or]", "");
     }
 }

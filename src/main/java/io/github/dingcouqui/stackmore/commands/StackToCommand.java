@@ -2,6 +2,7 @@ package io.github.dingcouqui.stackmore.commands;
 
 import io.github.dingcouqui.stackmore.StackMorePlugin;
 import io.github.dingcouqui.stackmore.item.StackItemManager;
+import io.github.dingcouqui.stackmore.util.CommandUtils;
 import io.github.dingcouqui.stackmore.util.TextUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,21 +26,12 @@ public class StackToCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players.");
-            return true;
-        }
-        if (!player.hasPermission("stackmore.use")) {
-            player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("no_permission")));
-            return true;
-        }
+        Player player = CommandUtils.validatePlayerWithPermission(sender, "stackmore.use");
+        if (player == null) return true;
         if (args.length < 1) return false;
 
-        ItemStack hand = player.getInventory().getItemInMainHand();
-        if (!StackItemManager.isSpecialStack(hand)) {
-            player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("not_holding_special")));
-            return true;
-        }
+        ItemStack hand = CommandUtils.getHeldSpecialStack(player);
+        if (hand == null) return true;
 
         int target;
         try {

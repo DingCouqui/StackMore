@@ -2,6 +2,7 @@ package io.github.dingcouqui.stackmore.commands;
 
 import io.github.dingcouqui.stackmore.StackMorePlugin;
 import io.github.dingcouqui.stackmore.item.StackItemManager;
+import io.github.dingcouqui.stackmore.util.CommandUtils;
 import io.github.dingcouqui.stackmore.util.TextUtils;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -9,7 +10,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 /**
  * {@code /stack [amount|all]} 命令执行器。
@@ -30,14 +30,8 @@ public class StackCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command.");
-            return true;
-        }
-        if (!player.hasPermission("stackmore.use")) {
-            player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("no_permission")));
-            return true;
-        }
+        Player player = CommandUtils.validatePlayerWithPermission(sender, "stackmore.use");
+        if (player == null) return true;
 
         ItemStack hand = player.getInventory().getItemInMainHand();
         if (hand.getType().isAir() || !hand.getType().isBlock()) {
@@ -67,95 +61,90 @@ public class StackCommand implements CommandExecutor {
             currentAmount = hand.getAmount();
         }
 
-        int targetAmount = maxSize;
-        if (args.length == 1) {
-            if (args[0].equalsIgnoreCase("all")) {
-                targetAmount = maxSize;
-            } else {
-                try {
-                    targetAmount = Integer.parseInt(args[0]);
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-            }
-        }
+        int targetAmount = parseTargetAmount(args, maxSize);
+        if (targetAmount < 0) return false;
 
         if (isAdmin) {
-            int setTo = Math.min(targetAmount, maxSize);
-            if (!isSpecial) {
-                ItemStack special = StackItemManager.createSpecialStack(hand, setTo, player.getName(), player.getUniqueId());
-                player.getInventory().setItemInMainHand(special);
-                player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("stack_all", "%total%", String.valueOf(setTo))));
-            } else {
-                StackItemManager.setAmount(hand, setTo);
-                // PDC 修改后需调用 setItemInMainHand 将变更同步到客户端，否则玩家看不到数量更新
-                player.getInventory().setItemInMainHand(hand);
-                player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("stack_success", "%amount%", String.valueOf(setTo - currentAmount), "%total%", String.valueOf(setTo))));
-            }
-            return true;
+            return handleAdminStack(player, hand, targetAmount, maxSize, isSpecial, currentAmount);
         }
+        return handlePlayerStack(player, hand, material, targetAmount, currentAmount, maxSize, isSpecial);
+    }
 
+    /**
+     * Parse the target stack amount from command arguments.
+     *
+     * @param args    command arguments
+     * @param maxSize the configured maximum stack size
+     * @return the parsed target amount, or -1 on parse error, or maxSize if no argument given
+     */
+    private static int parseTargetAmount(String[] args, int maxSize) {
+        if (args.length == 1 && !args[0].equalsIgnoreCase("all")) {
+            try {
+                return Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        }
+        return maxSize;
+    }
+
+    /**
+     * Handle /stack for admin players — directly set the stack amount without
+     * consuming inventory items.
+     */
+    private static boolean handleAdminStack(Player player, ItemStack hand, int targetAmount,
+                                            int maxSize, boolean isSpecial, int currentAmount) {
+        int setTo = Math.min(targetAmount, maxSize);
         if (!isSpecial) {
-            hand = StackItemManager.createSpecialStack(hand, currentAmount, player.getName(), player.getUniqueId());
+            ItemStack special = StackItemManager.createSpecialStack(hand, setTo,
+                    player.getName(), player.getUniqueId());
+            player.getInventory().setItemInMainHand(special);
+            player.sendMessage(TextUtils.toComponent(
+                    StackMorePlugin.getMessageManager().get("stack_all", "%total%", String.valueOf(setTo))));
+        } else {
+            StackItemManager.setAmount(hand, setTo);
+            // PDC 修改后需调用 setItemInMainHand 将变更同步到客户端，否则玩家看不到数量更新
+            player.getInventory().setItemInMainHand(hand);
+            player.sendMessage(TextUtils.toComponent(
+                    StackMorePlugin.getMessageManager().get("stack_success",
+                            "%amount%", String.valueOf(setTo - currentAmount),
+                            "%total%", String.valueOf(setTo))));
+        }
+        return true;
+    }
+
+    /**
+     * Handle /stack for normal players — convert held item to special stack
+     * (if not already), then absorb matching items from inventory.
+     */
+    private static boolean handlePlayerStack(Player player, ItemStack hand, Material material,
+                                             int targetAmount, int currentAmount,
+                                             int maxSize, boolean isSpecial) {
+        if (!isSpecial) {
+            hand = StackItemManager.createSpecialStack(hand, currentAmount,
+                    player.getName(), player.getUniqueId());
             player.getInventory().setItemInMainHand(hand);
         }
 
         int toAdd = targetAmount - currentAmount;
         if (toAdd <= 0) {
-            player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("stack_limit", "%amount%", "0", "%total%", String.valueOf(currentAmount))));
+            player.sendMessage(TextUtils.toComponent(
+                    StackMorePlugin.getMessageManager().get("stack_limit",
+                            "%amount%", "0", "%total%", String.valueOf(currentAmount))));
             return true;
         }
 
-        int absorbed = absorbFromPlayer(player, material, toAdd);
+        int absorbed = StackCommandHelper.absorbFromPlayer(player, material, toAdd);
         int newTotal = currentAmount + absorbed;
         StackItemManager.setAmount(hand, newTotal);
         // PDC 修改后需调用 setItemInMainHand 将变更同步到客户端，否则玩家看不到数量更新
         player.getInventory().setItemInMainHand(hand);
 
         String msgPath = newTotal >= maxSize ? "stack_limit" : "stack_success";
-        player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get(msgPath, "%amount%", String.valueOf(absorbed), "%total%", String.valueOf(newTotal))));
+        player.sendMessage(TextUtils.toComponent(
+                StackMorePlugin.getMessageManager().get(msgPath,
+                        "%amount%", String.valueOf(absorbed),
+                        "%total%", String.valueOf(newTotal))));
         return true;
-    }
-
-    /**
-     * 从玩家背包中扫描并吸收指定数量的同种普通物品。
-     *
-     * <p>扫描顺序：背包 0-35 号槽位（跳过手持槽）→ 副手。
-     * 跳过已为特殊堆叠的物品格。</p>
-     *
-     * @param player   目标玩家
-     * @param material 要吸收的物品材料
-     * @param needed   需要的数量
-     * @return 实际吸收的数量（≤ needed）
-     */
-    private int absorbFromPlayer(Player player, Material material, int needed) {
-        PlayerInventory inv = player.getInventory();
-        int absorbed = 0;
-        for (int i = 0; i < 36; i++) {
-            if (i == inv.getHeldItemSlot()) continue;
-            ItemStack item = inv.getItem(i);
-            if (item != null && item.getType() == material
-                    && !StackItemManager.isSpecialStack(item)
-                    && !StackItemManager.hasExternalPDCTags(item)) {
-                int available = item.getAmount();
-                int take = Math.min(needed - absorbed, available);
-                item.setAmount(available - take);
-                if (item.getAmount() <= 0) inv.clear(i);
-                absorbed += take;
-                if (absorbed >= needed) break;
-            }
-        }
-        if (absorbed < needed) {
-            ItemStack off = inv.getItemInOffHand();
-            if (off != null && off.getType() == material
-                    && !StackItemManager.isSpecialStack(off)
-                    && !StackItemManager.hasExternalPDCTags(off)) {
-                int take = Math.min(needed - absorbed, off.getAmount());
-                off.setAmount(off.getAmount() - take);
-                if (off.getAmount() <= 0) inv.setItemInOffHand(null);
-                absorbed += take;
-            }
-        }
-        return absorbed;
     }
 }

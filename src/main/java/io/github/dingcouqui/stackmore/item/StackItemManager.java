@@ -3,9 +3,11 @@ package io.github.dingcouqui.stackmore.item;
 import io.github.dingcouqui.stackmore.StackMorePlugin;
 import io.github.dingcouqui.stackmore.config.MessageManager;
 import io.github.dingcouqui.stackmore.util.TextUtils;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -153,7 +155,7 @@ public class StackItemManager {
         // 保留原物品的自定义显示名称（如铁砧重命名）
         ItemMeta originalMeta = normalItem.getItemMeta();
         if (originalMeta != null && originalMeta.hasDisplayName()) {
-            meta.setDisplayName(originalMeta.getDisplayName());
+            meta.displayName(originalMeta.displayName());
         }
 
         // 设置 PDC 元数据
@@ -163,7 +165,9 @@ public class StackItemManager {
         meta.getPersistentDataContainer().set(KEY_OWNER_UUID, PersistentDataType.STRING, ownerUUID.toString());
 
         // 附魔光效（隐藏附魔标签）
-        meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+        meta.addEnchant(RegistryAccess.registryAccess()
+                .getRegistry(RegistryKey.ENCHANTMENT)
+                .get(NamespacedKey.minecraft("unbreaking")), 1, true);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
         updateLore(meta, amount);
@@ -176,10 +180,31 @@ public class StackItemManager {
      */
     private static void updateLore(ItemMeta meta, int amount) {
         MessageManager msg = StackMorePlugin.getMessageManager();
-        String line = TextUtils.colorize(msg.get("lore_format", "%amount%", String.valueOf(amount)));
-        List<String> lore = new ArrayList<>();
+        Component line = TextUtils.colorize(msg.get("lore_format", "%amount%", String.valueOf(amount)));
+        List<Component> lore = new ArrayList<>();
         lore.add(line);
-        meta.setLore(lore);
+        meta.lore(lore);
+    }
+
+    /**
+     * 将特殊堆叠转换为指定数量的普通物品堆叠。
+     *
+     * <p>创建新的 {@link ItemStack}，保留原始特殊堆叠的自定义显示名称
+     *（如铁砧重命名）。</p>
+     *
+     * @param specialItem 特殊堆叠物品
+     * @param amount      目标数量
+     * @return 普通物品堆叠，保留原始显示名称
+     */
+    public static ItemStack toNormalStack(ItemStack specialItem, int amount) {
+        ItemStack normal = new ItemStack(specialItem.getType(), amount);
+        ItemMeta specialMeta = specialItem.getItemMeta();
+        if (specialMeta != null && specialMeta.hasDisplayName()) {
+            ItemMeta normalMeta = normal.getItemMeta();
+            normalMeta.displayName(specialMeta.displayName());
+            normal.setItemMeta(normalMeta);
+        }
+        return normal;
     }
 
     /**
@@ -197,14 +222,7 @@ public class StackItemManager {
      */
     public static ItemStack adjustAfterPlacement(ItemStack specialItem, int newAmount) {
         if (newAmount <= 64) {
-            ItemStack normal = new ItemStack(specialItem.getType(), newAmount);
-            ItemMeta specialMeta = specialItem.getItemMeta();
-            if (specialMeta != null && specialMeta.hasDisplayName()) {
-                ItemMeta normalMeta = normal.getItemMeta();
-                normalMeta.setDisplayName(specialMeta.getDisplayName());
-                normal.setItemMeta(normalMeta);
-            }
-            return normal;
+            return toNormalStack(specialItem, newAmount);
         } else {
             setAmount(specialItem, newAmount);
             return specialItem;
