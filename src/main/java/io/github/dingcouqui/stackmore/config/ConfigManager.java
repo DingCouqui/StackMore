@@ -109,6 +109,20 @@ public class ConfigManager {
         return disabledMaterials.contains(material);
     }
 
+    /**
+     * 切换语言并持久化到 config.yml。
+     *
+     * <p>更新内存中的语言设置，写入配置文件。
+     * 调用者需自行调用 {@code plugin.reload()} 使新语言即时生效。</p>
+     *
+     * @param lang 语言文件名前缀（如 {@code "zh_cn"}）
+     */
+    public void setLanguage(String lang) {
+        this.language = lang;
+        config.set("language", lang);
+        saveConfig();
+    }
+
     /** @return 当前语言文件名前缀（如 {@code zh_cn}） */
     public String getLanguage() {
         return language;
