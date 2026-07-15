@@ -18,18 +18,20 @@ It supports quantity control, anti-split protection, and compatibility with land
 - **Admin Mode**: Players with `stackmore.admin` can set any amount directly via `/stack` or `/stackto` without consuming inventory items.
 - **Secure**: All shulker boxes are forcibly disabled; container blocks (chests, furnaces, etc.) have NBT cleared when stacked to prevent item duplication.
 - **HUD Display**: ActionBar shows item name and current amount (can be toggled).
-- **Multi-language**: Built-in Chinese and English messages, fully customisable.
+- **Multi-language**: 7 built-in languages (Chinese, English, German, Russian, Spanish, French, Japanese), switchable in-game or via config.
+- **Third-party Item Protection**: Items tagged by other plugins (e.g. Infinite-Blocks) are automatically rejected to prevent accidental destruction.
 
 ### Commands
 
-| Command | Arguments | Description | Permission |
-|---------|-----------|-------------|------------|
-| `/stack` | `[amount \| all]` | Convert held normal block to a special stack and absorb the same type from inventory; `all` stacks to the maximum limit. Admins set directly to the limit without consuming items. | `stackmore.use` |
-| `/stackto` | `<amount>` | Fill up to the specified amount (only if greater than current). Admins set directly. | `stackmore.use` |
-| `/unstack` | `[amount \| all]` | Unstack as much as possible (keep remainder); `all` fully unstacks and drops excess; with an amount less than current, unstacks that many. | `stackmore.use` |
-| `/unstackto` | `<amount>` | Unstack until the held stack contains exactly the specified amount (excess dropped if inventory full). | `stackmore.use` |
-| `/stackinfo` | none | Show details of the held special stack (item, UUID, amount, owner). | `stackmore.use` |
-| `/stackmore reload` | none | Reload configuration and language files. | `stackmore.admin` |
+| Command | Aliases | Arguments | Description | Permission |
+|---------|---------|-----------|-------------|------------|
+| `/stack` | `sm`, `stk` | `[amount \| all]` | Convert held normal block to a special stack and absorb the same type from inventory; `all` stacks to the maximum limit. Admins set directly to the limit without consuming items. | `stackmore.use` |
+| `/stackto` | `stkto` | `<amount>` | Fill up to the specified amount (only if greater than current). Admins set directly. | `stackmore.use` |
+| `/unstack` | `unstk` | `[amount \| all]` | Unstack as much as possible (keep remainder); `all` fully unstacks and drops excess; with an amount less than current, unstacks that many. | `stackmore.use` |
+| `/unstackto` | `unstkto` | `<amount>` | Unstack until the held stack contains exactly the specified amount (excess dropped if inventory full). | `stackmore.use` |
+| `/stackinfo` | — | none | Show details of the held special stack (item, UUID, amount, owner). | `stackmore.use` |
+| `/stackmore reload` | — | none | Reload configuration and language files. | `stackmore.admin` |
+| `/stackmore setlanguage` | — | `<code>` | Switch language in-game (e.g. `en_us`, `zh_cn`). Lists available codes with `<Tab>`. | `stackmore.admin` |
 
 - `stackmore.use` is default for all players.
 - `stackmore.admin` is default for OPs only.
@@ -64,13 +66,16 @@ Language files (`lang/zh_cn.yml`, `lang/en_us.yml`) contain all messages, suppor
 A: For security, all shulker boxes are permanently disabled and cannot be overridden in config.
 
 **Q: The amount didn't change after `/stack`?**  
-A: As a non-admin, your inventory must contain enough normal blocks of that type. Otherwise a "reached limit" message appears.
+A: As a non-admin, your inventory must contain enough normal blocks of that type. Otherwise a "reached limit" message appears. Also, items tagged by other plugins (e.g. Infinite-Blocks) are automatically skipped.
 
 **Q: Blocks disappear after placement?**  
 A: The plugin handles block placement carefully; if you still see issues, check for conflicting plugins (e.g. anti‑cheat) and server logs.
 
 **Q: How do I change the language?**  
-A: Set `language` in `config.yml` to `en_us` (or any custom filename) and place the corresponding file in `lang/`.
+A: Use `/stackmore setlanguage <code>` in-game (e.g. `en_us`, `zh_cn`, `de_de`), or set `language` in `config.yml` and reload.
+
+**Q: Messages are empty after upgrading the plugin JAR?**  
+A: The plugin only extracts language files when they don't exist yet. If a new version added message keys, delete (or rename) the old `plugins/StackMore/lang/` folder and restart to get updated files.
 
 ### Build & Development
 Build with Gradle: `gradle build` → Jar in `build/libs/`.  
@@ -99,18 +104,20 @@ StackMore 是一个 Paper 插件，允许玩家将超过 64 个的方块压缩�
 - **管理员模式**：拥有 `stackmore.admin` 权限的玩家使用 `/stack` 或 `/stackto` 时，可直接设定任意数量，不消耗背包物品。
 - **安全防护**：所有潜影盒强制禁用；容器类方块（箱子、熔炉等）堆叠时清除 NBT，杜绝物品复制。
 - **HUD 显示**：手持特殊堆叠时 ActionBar 显示物品名称与当前数量（可开关）。
-- **多语言支持**：内置中文/英文语言文件，消息颜色可自定义。
+- **多语言支持**：内置 7 种语言（简体中文、英语、德语、俄语、西班牙语、法语、日语），游戏内或配置文件随时切换。
+- **第三方物品保护**：不会被其他插件（如 Infinite-Blocks）标记的物品，防止意外破坏数据。
 
 ### 指令列表
 
-| 指令 | 参数 | 说明 | 权限 |
-|------|------|------|------|
-| `/stack` | `[数量 \| all]` | 将手持普通方块变为特殊堆叠并吸收背包同类物品；`all` 堆叠至上限；管理员直接设为上限 | `stackmore.use` |
-| `/stackto` | `<数量>` | 仅当数量 > 当前时，向上填充到指定数量；管理员直接设置 | `stackmore.use` |
-| `/unstack` | `[数量 \| all]` | 无参数尽量解压（保留剩余）；`all` 强制全解压并掉落多余物品；带数量且 < 当前则解压该数量 | `stackmore.use` |
-| `/unstackto` | `<数量>` | 解压到手中只剩指定数量（背包满则掉落差额） | `stackmore.use` |
-| `/stackinfo` | 无 | 查看手持特殊堆叠详细信息 | `stackmore.use` |
-| `/stackmore reload` | 无 | 重载配置文件与语言文件 | `stackmore.admin` |
+| 指令 | 别名 | 参数 | 说明 | 权限 |
+|------|------|------|------|------|
+| `/stack` | `sm`、`stk` | `[数量 \| all]` | 将手持普通方块变为特殊堆叠并吸收背包同类物品；`all` 堆叠至上限；管理员直接设为上限 | `stackmore.use` |
+| `/stackto` | `stkto` | `<数量>` | 仅当数量 > 当前时，向上填充到指定数量；管理员直接设置 | `stackmore.use` |
+| `/unstack` | `unstk` | `[数量 \| all]` | 无参数尽量解压（保留剩余）；`all` 强制全解压并掉落多余物品；带数量且 < 当前则解压该数量 | `stackmore.use` |
+| `/unstackto` | `unstkto` | `<数量>` | 解压到手中只剩指定数量（背包满则掉落差额） | `stackmore.use` |
+| `/stackinfo` | — | 无 | 查看手持特殊堆叠详细信息 | `stackmore.use` |
+| `/stackmore reload` | — | 无 | 重载配置文件与语言文件 | `stackmore.admin` |
+| `/stackmore setlanguage` | — | `<语言代码>` | 游戏内切换语言（如 `en_us`、`zh_cn`），支持 `<Tab>` 列出可用代码 | `stackmore.admin` |
 
 - `stackmore.use` 默认赋予所有玩家。
 - `stackmore.admin` 默认仅 OP 拥有。
@@ -145,13 +152,16 @@ disabled_materials: []       # 额外禁止堆叠的方块材质（大写），�
 A：出于防止物品复制的安全考量，所有潜影盒被硬编码禁用。
 
 **Q：使用 `/stack` 后数量没变？**  
-A：普通玩家需要背包或副手有足够同类方块可供吸收，否则会提示已达上限。
+A：普通玩家需要背包或副手有足够同类方块可供吸收，否则会提示已达上限。被其他插件标记的物品（如 Infinite-Blocks）会被自动跳过。
 
 **Q：放置方块后消失？**  
 A：插件已妥善处理方块同步；若仍有问题，请检查是否有冲突插件（如反作弊）并查看服务器日志。
 
 **Q：如何更改语言？**  
-A：修改 `config.yml` 的 `language` 为 `en_us` 或自定义文件名，并在 `lang/` 下放置对应语言文件即可。
+A：游戏内使用 `/stackmore setlanguage <代码>`（如 `en_us`、`zh_cn`、`de_de`），或修改 `config.yml` 的 `language` 后重载。
+
+**Q：升级插件 JAR 后消息变空白？**  
+A：插件仅在语言文件不存在时提取。若新版本增加了消息 key，请删除（或重命名）旧的 `plugins/StackMore/lang/` 文件夹后重启。
 
 ### 构建与开发
 使用 Gradle 构建：`gradle build`，Jar 文件生成在 `build/libs/` 下。  
