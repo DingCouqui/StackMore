@@ -36,7 +36,7 @@ gradle wrapper      # generate gradlew (no wrapper committed)
 
 ### Plugin entrypoint
 `StackMorePlugin.java` — standard `JavaPlugin`. In `onEnable()`:
-- Registers commands: `stack` (+ aliases `sm`, `stk`), `stackto`, `unstack`, `unstackto`, `stackinfo`, `stackmore` via `getCommand().setExecutor()`
+- Registers commands: `stack` (+ aliases `sm`, `stk`), `stackto` (+ alias `stkto`), `unstack` (+ alias `unstk`), `unstackto` (+ alias `unstkto`), `stackinfo`, `stackmore` via `getCommand().setExecutor()`
 - Registers **2 event listeners**: `BlockListener`, `InventoryListener`
 - Starts **1 repeating HUD task**: `HudTask` (BukkitRunnable, 20 tick period)
 
@@ -73,6 +73,7 @@ PDC keys stored per-item (`StackItemManager.java:42-48`):
 - Default language is **`en_us`** (`config.yml` default + `ConfigManager.java` fallback). If the configured language file doesn't exist, `MessageManager.java` falls back to **`en_us.yml`**.
 - 7 built-in language files under `src/main/resources/lang/`: `zh_cn.yml`, `en_us.yml`, `de_de.yml`, `ru_ru.yml`, `es_es.yml`, `fr_fr.yml`, `ja_jp.yml`.
 - `config.yml` settings: `language`, `max_stack_multiplier` (max stack = 64 × multiplier), `hud_enabled`, `disabled_materials` (additional block materials to reject).
+- **Lang file upgrade trap**: `saveDefaultLang()` only copies files from the JAR when the target does **not** exist. If a server already has old `lang/*.yml` files, a new JAR with updated keys will NOT overwrite them → missing keys return `""` → empty messages in-game. When adding new message keys, users must manually delete old `plugins/StackMore/lang/*.yml` files (or rename them) and restart for the plugin to re-extract updated copies.
 
 ## Conventions
 

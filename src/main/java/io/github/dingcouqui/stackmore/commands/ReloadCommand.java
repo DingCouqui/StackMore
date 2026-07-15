@@ -7,18 +7,21 @@ import io.github.dingcouqui.stackmore.util.TextUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.command.TabCompleter;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * {@code /stackmore reload} 和 {@code /stackmore setlanguage <lang>} 命令执行器。
+ * {@code /stackmore reload} 和 {@code /stackmore setlanguage <lang>} 命令执行器，
+ * 同时提供 Tab 补全。
  *
  * <p>重载插件的 {@code config.yml} 和语言文件，无需重启服务器。
  * 也可用于切换语言设置。
  * 需要 {@code stackmore.admin} 权限。</p>
  */
-public class ReloadCommand implements CommandExecutor {
+public class ReloadCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -69,5 +72,40 @@ public class ReloadCommand implements CommandExecutor {
 
     private void showUsage(CommandSender sender) {
         sender.sendMessage(TextUtils.toComponent("&e用法: /stackmore reload | setlanguage <语言代码>"));
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
+        if (!sender.hasPermission("stackmore.admin")) {
+            return List.of();
+        }
+
+        if (args.length == 1) {
+            List<String> completions = new ArrayList<>();
+            for (String sub : List.of("reload", "setlanguage")) {
+                if (sub.startsWith(args[0].toLowerCase())) {
+                    completions.add(sub);
+                }
+            }
+            return completions;
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("setlanguage")) {
+            List<String> completions = new ArrayList<>();
+            File langDir = new File(StackMorePlugin.getInstance().getDataFolder(), "lang");
+            File[] files = langDir.listFiles((dir, name) -> name.endsWith(".yml"));
+            if (files != null) {
+                String prefix = args[1].toLowerCase();
+                for (File f : files) {
+                    String langCode = f.getName().replace(".yml", "");
+                    if (langCode.startsWith(prefix)) {
+                        completions.add(langCode);
+                    }
+                }
+            }
+            return completions;
+        }
+
+        return List.of();
     }
 }

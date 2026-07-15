@@ -49,7 +49,9 @@ public class StackMorePlugin extends JavaPlugin {
         getCommand("unstack").setExecutor(new UnstackCommand());
         getCommand("unstackto").setExecutor(new UnstackToCommand());
         getCommand("stackinfo").setExecutor(new StackInfoCommand());
-        getCommand("stackmore").setExecutor(new ReloadCommand());
+        ReloadCommand reloadCmd = new ReloadCommand();
+        getCommand("stackmore").setExecutor(reloadCmd);
+        getCommand("stackmore").setTabCompleter(reloadCmd);
 
         // Register listeners
         getServer().getPluginManager().registerEvents(new BlockListener(), this);

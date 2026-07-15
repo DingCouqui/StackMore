@@ -8,15 +8,19 @@ commands:
   stack:
     description: Create or add to a special stack
     usage: /<command> [amount|all]
+    aliases: [sm, stk]
   stackto:
     description: Fill special stack to a specific amount
     usage: /<command> <amount>
+    aliases: [stkto]
   unstack:
     description: Unstack items from special stack
     usage: /<command> [amount|all]
+    aliases: [unstk]
   unstackto:
     description: Unstack to a specific amount
     usage: /<command> <amount>
+    aliases: [unstkto]
   stackinfo:
     description: Show info about held special stack
     usage: /<command>
