@@ -1,6 +1,7 @@
 stack_success: "&a%amount%個を追加、合計 %total% 個。"
 stack_limit: "&e上限に達しました、%amount%個を追加、合計 %total% 個。"
 stack_all: "&a上限までスタック、合計 %total% 個。"
+stackto_target_too_low: "&c目標数は現在の数量より大きくする必要があります。"
 unstack_success: "&a%amount%個を取り出し、残り %total% 個。"
 unstack_all: "&a全て取り出し、余剰分はドロップされました。"
 unstack_drop: "&cインベントリ満杯、余剰分はドロップされました。"

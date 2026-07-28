@@ -1,6 +1,7 @@
 stack_success: "&a%amount% Gegenstände gestapelt, insgesamt %total%."
 stack_limit: "&eLimit erreicht, %amount% Gegenstände gestapelt, insgesamt %total%."
 stack_all: "&aBis zum Limit gestapelt, insgesamt %total%."
+stackto_target_too_low: "&cDie Zielmenge muss größer als die aktuelle Menge sein."
 unstack_success: "&a%amount% Gegenstände entnommen, verbleibend %total%."
 unstack_all: "&aAlles entnommen, Überschuss fallengelassen."
 unstack_drop: "&cInventar voll, Überschuss fallengelassen."
