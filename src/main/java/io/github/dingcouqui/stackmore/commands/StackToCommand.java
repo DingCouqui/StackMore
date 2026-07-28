@@ -42,7 +42,8 @@ public class StackToCommand implements CommandExecutor {
 
         int current = StackItemManager.getAmount(hand);
         if (target <= current) {
-            player.sendMessage(TextUtils.toComponent("§c目标数量必须大于当前数量."));
+            player.sendMessage(TextUtils.toComponent(
+                    StackMorePlugin.getMessageManager().get("stackto_target_too_low")));
             return true;
         }
 

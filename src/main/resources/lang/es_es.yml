@@ -1,6 +1,7 @@
 stack_success: "&aSe apilaron %amount% objetos, total %total%."
 stack_limit: "&eLímite alcanzado, se apilaron %amount% objetos, total %total%."
 stack_all: "&aApilado hasta el límite, total %total%."
+stackto_target_too_low: "&cLa cantidad objetivo debe ser mayor que la actual."
 unstack_success: "&aSe desapilaron %amount% objetos, quedan %total%."
 unstack_all: "&aTodo desapilado, exceso tirado."
 unstack_drop: "&cInventario lleno, exceso tirado."

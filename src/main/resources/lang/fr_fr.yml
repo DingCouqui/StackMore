@@ -1,6 +1,7 @@
 stack_success: "&a%amount% objets empilés, total %total%."
 stack_limit: "&eLimite atteinte, %amount% objets empilés, total %total%."
 stack_all: "&aEmpilé jusqu'à la limite, total %total%."
+stackto_target_too_low: "&cLa quantité cible doit être supérieure à la quantité actuelle."
 unstack_success: "&a%amount% objets désempilés, restant %total%."
 unstack_all: "&aTout désempilé, surplus jeté."
 unstack_drop: "&cInventaire plein, surplus jeté."

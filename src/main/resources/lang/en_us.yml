@@ -1,6 +1,7 @@
 stack_success: "&aStacked %amount% items, total %total%."
 stack_limit: "&eReached limit, stacked %amount% items, total %total%."
 stack_all: "&aStacked to limit %total%."
+stackto_target_too_low: "&cTarget amount must be greater than the current amount."
 unstack_success: "&aUnstacked %amount% items, remaining %total%."
 unstack_all: "&aAll items unstacked, excess dropped."
 unstack_drop: "&cInventory full, excess dropped."

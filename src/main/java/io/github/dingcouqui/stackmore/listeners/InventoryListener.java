@@ -8,6 +8,7 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.util.Set;
 
@@ -19,7 +20,7 @@ import java.util.Set;
  *
  * <h3>限制规则</h3>
  * <ul>
- *   <li><b>受限容器</b>（工作台、铁砧、砂轮、锻造台、附魔台、合成格）：
+ *   <li><b>受限容器</b>（工作台、熔炉、铁砧等功能性界面）：
  *       禁止将特殊堆叠物品移入这些容器的界面格子，也禁止通过 Shift+点击
  *       将玩家背包中的特殊堆叠快速移入。</li>
  *   <li><b>操作白名单</b>：涉及特殊堆叠时仅允许 {@code PICKUP_ALL}、
@@ -43,6 +44,25 @@ public class InventoryListener implements Listener {
             InventoryAction.MOVE_TO_OTHER_INVENTORY
     );
 
+    private static final Set<InventoryType> RESTRICTED_CONTAINERS = Set.of(
+            InventoryType.WORKBENCH,
+            InventoryType.ANVIL,
+            InventoryType.GRINDSTONE,
+            InventoryType.SMITHING,
+            InventoryType.ENCHANTING,
+            InventoryType.CRAFTING,
+            InventoryType.FURNACE,
+            InventoryType.BLAST_FURNACE,
+            InventoryType.SMOKER,
+            InventoryType.BREWING,
+            InventoryType.LOOM,
+            InventoryType.CARTOGRAPHY,
+            InventoryType.STONECUTTER,
+            InventoryType.BEACON,
+            InventoryType.MERCHANT,
+            InventoryType.CRAFTER
+    );
+
     /**
      * 拦截特殊堆叠物品在受限容器中的点击操作。
      */
@@ -54,12 +74,14 @@ public class InventoryListener implements Listener {
 
         ItemStack cursor = event.getCursor();
         ItemStack current = event.getCurrentItem();
+        ItemStack hotbarSwap = getHotbarSwapItem(event);
         boolean cursorSpecial = StackItemManager.isSpecialStack(cursor);
         boolean currentSpecial = StackItemManager.isSpecialStack(current);
+        boolean hotbarSwapSpecial = StackItemManager.isSpecialStack(hotbarSwap);
 
-        if (cursorSpecial || currentSpecial) {
+        if (cursorSpecial || currentSpecial || hotbarSwapSpecial) {
             if (isRestrictedContainer(topType)) {
-                if (event.getClickedInventory() == top && cursorSpecial) {
+                if (event.getClickedInventory() == top && (cursorSpecial || hotbarSwapSpecial)) {
                     event.setCancelled(true);
                     return;
                 }
@@ -83,6 +105,23 @@ public class InventoryListener implements Listener {
         }
     }
 
+    private ItemStack getHotbarSwapItem(InventoryClickEvent event) {
+        if (event.getAction() != InventoryAction.HOTBAR_SWAP) {
+            return null;
+        }
+
+        PlayerInventory inv = event.getWhoClicked().getInventory();
+        if (event.getClick() == ClickType.SWAP_OFFHAND) {
+            return inv.getItemInOffHand();
+        }
+
+        int hotbarButton = event.getHotbarButton();
+        if (hotbarButton < 0) {
+            return null;
+        }
+        return inv.getItem(hotbarButton);
+    }
+
     /**
      * 完全禁止涉及特殊堆叠物品的拖拽操作。
      */
@@ -96,14 +135,9 @@ public class InventoryListener implements Listener {
 
     /**
      * 判断容器类型是否受限。
-     * 受限容器包含所有可修改物品 NBT 或拆解物品的功能性方块界面。
+     * 受限容器包含所有会加工、交易或改写物品的功能性界面。
      */
     private boolean isRestrictedContainer(InventoryType type) {
-        return type == InventoryType.WORKBENCH ||
-               type == InventoryType.ANVIL ||
-               type == InventoryType.GRINDSTONE ||
-               type == InventoryType.SMITHING ||
-               type == InventoryType.ENCHANTING ||
-               type == InventoryType.CRAFTING;
+        return RESTRICTED_CONTAINERS.contains(type);
     }
 }

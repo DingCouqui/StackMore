@@ -1,6 +1,7 @@
 stack_success: "&aДобавлено %amount%, всего %total%."
 stack_limit: "&eДостигнут лимит, добавлено %amount%, всего %total%."
 stack_all: "&aСложено до лимита, всего %total%."
+stackto_target_too_low: "&cЦелевое количество должно быть больше текущего."
 unstack_success: "&aИзвлечено %amount%, осталось %total%."
 unstack_all: "&aВсё извлечено, излишки выброшены."
 unstack_drop: "&cИнвентарь полон, излишки выброшены."

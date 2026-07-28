@@ -1,6 +1,7 @@
 stack_success: "&a已堆入 %amount% 个，当前 %total% 个。"
 stack_limit: "&e已达上限，已堆入 %amount% 个，当前 %total% 个。"
 stack_all: "&a已堆叠至上限 %total% 个。"
+stackto_target_too_low: "&c目标数量必须大于当前数量。"
 unstack_success: "&a已解压 %amount% 个，剩余 %total% 个。"
 unstack_all: "&a已全部解压，多余物品已掉落。"
 unstack_drop: "&c背包已满，多余物品已掉落。"
