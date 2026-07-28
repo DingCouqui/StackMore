@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'io.github.dingcouqui'
-version = '1.0.2'
+version = '1.0.3'
 
 repositories {
     // 腾讯云镜像（在国内优先级最高，国外可回退）

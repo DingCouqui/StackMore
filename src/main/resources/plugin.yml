@@ -1,5 +1,5 @@
 name: StackMore
-version: "1.0.0"
+version: "${version}"
 main: io.github.dingcouqui.stackmore.StackMorePlugin
 api-version: "1.21"
 description: Allows stacking of blocks beyond 64 with special oversized stacks.
