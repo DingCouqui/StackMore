@@ -8,6 +8,7 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.util.Set;
 
@@ -54,12 +55,14 @@ public class InventoryListener implements Listener {
 
         ItemStack cursor = event.getCursor();
         ItemStack current = event.getCurrentItem();
+        ItemStack hotbarSwap = getHotbarSwapItem(event);
         boolean cursorSpecial = StackItemManager.isSpecialStack(cursor);
         boolean currentSpecial = StackItemManager.isSpecialStack(current);
+        boolean hotbarSwapSpecial = StackItemManager.isSpecialStack(hotbarSwap);
 
-        if (cursorSpecial || currentSpecial) {
+        if (cursorSpecial || currentSpecial || hotbarSwapSpecial) {
             if (isRestrictedContainer(topType)) {
-                if (event.getClickedInventory() == top && cursorSpecial) {
+                if (event.getClickedInventory() == top && (cursorSpecial || hotbarSwapSpecial)) {
                     event.setCancelled(true);
                     return;
                 }
@@ -81,6 +84,23 @@ public class InventoryListener implements Listener {
         if (event.getAction() == InventoryAction.COLLECT_TO_CURSOR && cursorSpecial) {
             event.setCancelled(true);
         }
+    }
+
+    private ItemStack getHotbarSwapItem(InventoryClickEvent event) {
+        if (event.getAction() != InventoryAction.HOTBAR_SWAP) {
+            return null;
+        }
+
+        PlayerInventory inv = event.getWhoClicked().getInventory();
+        if (event.getClick() == ClickType.SWAP_OFFHAND) {
+            return inv.getItemInOffHand();
+        }
+
+        int hotbarButton = event.getHotbarButton();
+        if (hotbarButton < 0) {
+            return null;
+        }
+        return inv.getItem(hotbarButton);
     }
 
     /**
