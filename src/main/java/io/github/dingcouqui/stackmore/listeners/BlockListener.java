@@ -3,11 +3,17 @@ package io.github.dingcouqui.stackmore.listeners;
 import io.github.dingcouqui.stackmore.StackMorePlugin;
 import io.github.dingcouqui.stackmore.item.StackItemManager;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.Tag;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -92,5 +98,104 @@ public class BlockListener implements Listener {
         } else if (hand == EquipmentSlot.OFF_HAND) {
             inv.setItemInOffHand(newItem);
         }
+    }
+
+    /**
+     * 监听特殊方块交互，在下一tick恢复物品
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void restoreSpecialStackInteraction(PlayerInteractEvent event) {
+        if (!isRightClickBlockWithHand(event)) {
+            return;
+        }
+
+        if (event.useItemInHand() == Event.Result.DENY || event.useInteractedBlock() == Event.Result.DENY) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            return;
+        }
+
+        ItemStack item = event.getItem();
+        if (!StackItemManager.isSpecialStack(item)) {
+            return;
+        }
+
+        Block block = event.getClickedBlock();
+        if (block == null || !canVanillaConsumeInteraction(block.getType(), item.getType())) {
+            return;
+        }
+
+        // 保存物品副本
+        EquipmentSlot hand = event.getHand();
+        ItemStack original = item.clone();
+        // 下一tick恢复
+        plugin.getServer().getScheduler().runTask(plugin, () -> restoreConsumedInteraction(player, hand, original));
+    }
+
+    private boolean isRightClickBlockWithHand(PlayerInteractEvent event) {
+        return event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getHand() != null;
+    }
+
+    /**
+     * 当前堆叠物品是否会被特殊方块交互消耗
+     *
+     * @param blockType 交互方块
+     * @param itemType  玩家的堆叠物品
+     */
+    private boolean canVanillaConsumeInteraction(Material blockType, Material itemType) {
+        if (Tag.FLOWER_POTS.isTagged(blockType)) {
+            return true;
+        }
+        if (blockType == Material.COMPOSTER && itemType.isCompostable()) {
+            return true;
+        }
+        if (blockType == Material.CAKE && Tag.CANDLES.isTagged(itemType)) {
+            return true;
+        }
+        return blockType == Material.RESPAWN_ANCHOR && itemType == Material.GLOWSTONE;
+    }
+
+    /**
+     * 特殊方块交互的物品消耗恢复任务
+     */
+    private void restoreConsumedInteraction(Player player, EquipmentSlot hand, ItemStack original) {
+        if (!player.isOnline()) {
+            return;
+        }
+
+        PlayerInventory inv = player.getInventory();
+        ItemStack current = getItemInHand(inv, hand);
+        if (!isEmpty(current)) {
+            return;
+        }
+
+        int newAmount = StackItemManager.getAmount(original) - 1;
+        if (newAmount <= 0) {
+            return;
+        }
+
+        setItemInHand(inv, hand, StackItemManager.adjustAfterPlacement(original, newAmount));
+    }
+
+    private ItemStack getItemInHand(PlayerInventory inv, EquipmentSlot hand) {
+        if (hand == EquipmentSlot.OFF_HAND) {
+            return inv.getItemInOffHand();
+        }
+        return inv.getItemInMainHand();
+    }
+
+    private void setItemInHand(PlayerInventory inv, EquipmentSlot hand, ItemStack item) {
+        if (hand == EquipmentSlot.OFF_HAND) {
+            inv.setItemInOffHand(item);
+        } else {
+            inv.setItemInMainHand(item);
+        }
+    }
+
+    private boolean isEmpty(ItemStack item) {
+        return item == null || item.getType().isAir() || item.getAmount() <= 0;
     }
 }
