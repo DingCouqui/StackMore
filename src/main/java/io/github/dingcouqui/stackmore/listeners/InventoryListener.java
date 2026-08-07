@@ -86,7 +86,10 @@ public class InventoryListener implements Listener {
                     return;
                 }
                 if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && currentSpecial) {
-                    if (event.getClickedInventory() != top) {
+                    // 玩家自身背包界面（E 菜单，top 为 CRAFTING）中，shift 点击仅在底部背包内部
+                    // 互移（快捷栏 ↔ 主存储），不会进入受限的合成格/盔甲区，故豁免此拦截；
+                    // 真实容器（工作台、熔炉等）的 shift 移入拦截保持不变。
+                    if (event.getClickedInventory() != top && topType != InventoryType.CRAFTING) {
                         event.setCancelled(true);
                         return;
                     }
