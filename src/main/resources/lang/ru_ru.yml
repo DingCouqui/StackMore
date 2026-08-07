@@ -22,5 +22,6 @@ player_only: "&cЭта команда доступна только игрока
 external_item_rejected: "&cЭтот предмет помечен другим плагином и не может быть сложен."
 reload_success: "&aКонфигурация перезагружена."
 setlanguage_usage: "&eИспользование: /stackmore setlanguage <код языка>"
+stackmore_usage: "&eИспользование: /stackmore reload | setlanguage <код языка>"
 language_changed: "&aЯзык изменён на %language%."
 language_not_found: "&cФайл языка %language%.yml не найден."

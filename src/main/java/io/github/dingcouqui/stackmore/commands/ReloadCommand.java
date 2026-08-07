@@ -71,7 +71,7 @@ public class ReloadCommand implements CommandExecutor, TabCompleter {
     }
 
     private void showUsage(CommandSender sender) {
-        sender.sendMessage(TextUtils.toComponent("&e用法: /stackmore reload | setlanguage <语言代码>"));
+        sender.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("stackmore_usage")));
     }
 
     @Override
