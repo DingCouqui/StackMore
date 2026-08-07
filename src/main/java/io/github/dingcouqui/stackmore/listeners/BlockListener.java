@@ -6,6 +6,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -44,6 +45,8 @@ public class BlockListener implements Listener {
     private final StackMorePlugin plugin = StackMorePlugin.getInstance();
     // 跨事件传递：放置前保存特殊堆叠副本，放置后读取并恢复
     private final Map<UUID, ItemStack> pendingSpecialStacks = new HashMap<>();
+    // 跨事件传递：右键交互前保存特殊堆叠牌子副本，用于检测第三方插件（如 BlockLocker）的自动放牌消耗
+    private final Map<UUID, ItemStack> pendingSignStacks = new HashMap<>();
 
     /**
      * 在原版消耗前保存特殊堆叠物品的副本。
@@ -133,6 +136,90 @@ public class BlockListener implements Listener {
         ItemStack original = item.clone();
         // 下一tick恢复
         plugin.getServer().getScheduler().runTask(plugin, () -> restoreConsumedInteraction(player, hand, original));
+    }
+
+    /**
+     * 在第三方插件（如 BlockLocker）处理右键交互前保存特殊堆叠牌子的副本。
+     *
+     * <p>LOWEST 优先级确保在其他任何监听器（包括 BlockLocker）之前执行。
+     * 仅保存特殊堆叠的牌子：BlockLocker 的自动放牌只会消耗牌子类物品。</p>
+     */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
+    public void saveSignStackOnInteract(PlayerInteractEvent event) {
+        if (!isRightClickBlockWithHand(event)) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            return;
+        }
+
+        ItemStack item = getItemInHand(player.getInventory(), event.getHand());
+        if (StackItemManager.isSpecialStack(item) && Tag.SIGNS.isTagged(item.getType())) {
+            pendingSignStacks.put(player.getUniqueId(), item.clone());
+        }
+    }
+
+    /**
+     * 检测第三方插件（如 BlockLocker）自动放置牌子时的物品消耗并恢复。
+     *
+     * <p>BlockLocker 在右键可保护方块且手持牌子时，会手动放置 [Private] 牌子并
+     * 直接从手槽扣减一个物品。由于特殊堆叠的原版 amount 恒为 1，这种扣减会把
+     * 整个特殊堆叠当作单个物品删除。这里通过交互事件的"签名"识别该消耗：</p>
+     * <ol>
+     *   <li>事件被取消（BlockLocker 自动放牌成功后会取消原交互事件）</li>
+     *   <li>对应手槽已被清空（物品被消耗）</li>
+     *   <li>点击面相对位置出现了新牌子（消耗的副作用证据，排除其他原因清空手槽）</li>
+     * </ol>
+     *
+     * <p>恢复发生在同一事件派发内（同步），不存在跨 tick 窗口，因此不会与
+     * 玩家的丢弃/移动等操作产生竞态。无副作用的静默消耗（不满足条件 3）
+     * 不做恢复，物品丢失风险由设计接受。</p>
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void restoreConsumedSignStack(PlayerInteractEvent event) {
+        if (!isRightClickBlockWithHand(event)) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            return;
+        }
+
+        UUID playerId = player.getUniqueId();
+        ItemStack original = pendingSignStacks.remove(playerId);
+        if (original == null) {
+            return;
+        }
+
+        // 条件 1：BlockLocker 自动放牌成功后会取消原交互事件
+        if (!event.isCancelled()) {
+            return;
+        }
+
+        // 条件 2：对应手槽已被清空（特殊堆叠被当作单个物品删除）
+        if (!isEmpty(getItemInHand(player.getInventory(), event.getHand()))) {
+            return;
+        }
+
+        // 条件 3：点击面相对位置出现了新牌子（消耗的副作用证据）
+        Block clickedBlock = event.getClickedBlock();
+        BlockFace clickedFace = event.getBlockFace();
+        if (clickedBlock == null || clickedFace == null) {
+            return;
+        }
+        Material placed = clickedBlock.getRelative(clickedFace).getType();
+        if (!Tag.STANDING_SIGNS.isTagged(placed) && !Tag.WALL_SIGNS.isTagged(placed)) {
+            return;
+        }
+
+        // 数量减 1 后放回原手槽（与正常放置的消耗一致）
+        int newAmount = StackItemManager.getAmount(original) - 1;
+        if (newAmount <= 0) {
+            return;
+        }
+        setItemInHand(player.getInventory(), event.getHand(),
+                StackItemManager.adjustAfterPlacement(original, newAmount));
     }
 
     private boolean isRightClickBlockWithHand(PlayerInteractEvent event) {
