@@ -169,8 +169,7 @@ public class UnstackCommand implements CommandExecutor {
             player.getInventory().setItemInMainHand(
                     StackItemManager.toNormalStack(hand, newAmount));
         } else {
-            StackItemManager.setAmount(hand, newAmount);
-            player.getInventory().setItemInMainHand(hand);
+            StackCommandHelper.updateHandAmount(player, hand, newAmount);
         }
     }
 

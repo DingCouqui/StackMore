@@ -52,7 +52,7 @@ public class StackToCommand implements CommandExecutor {
         int setTo = Math.min(target, maxSize);
 
         if (isAdmin) {
-            StackItemManager.setAmount(hand, setTo);
+            StackCommandHelper.updateHandAmount(player, hand, setTo);
             player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get("stack_success", "%amount%", String.valueOf(setTo - current), "%total%", String.valueOf(setTo))));
             return true;
         }
@@ -60,7 +60,7 @@ public class StackToCommand implements CommandExecutor {
         int needed = setTo - current;
         int absorbed = StackCommandHelper.absorbFromPlayer(player, hand.getType(), needed);
         int newTotal = current + absorbed;
-        StackItemManager.setAmount(hand, newTotal);
+        StackCommandHelper.updateHandAmount(player, hand, newTotal);
         String msgPath = newTotal >= maxSize ? "stack_limit" : "stack_success";
         player.sendMessage(TextUtils.toComponent(StackMorePlugin.getMessageManager().get(msgPath, "%amount%", String.valueOf(absorbed), "%total%", String.valueOf(newTotal))));
         return true;

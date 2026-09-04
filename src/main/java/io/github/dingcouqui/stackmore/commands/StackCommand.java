@@ -102,9 +102,7 @@ public class StackCommand implements CommandExecutor {
             player.sendMessage(TextUtils.toComponent(
                     StackMorePlugin.getMessageManager().get("stack_all", "%total%", String.valueOf(setTo))));
         } else {
-            StackItemManager.setAmount(hand, setTo);
-            // PDC 修改后需调用 setItemInMainHand 将变更同步到客户端，否则玩家看不到数量更新
-            player.getInventory().setItemInMainHand(hand);
+            StackCommandHelper.updateHandAmount(player, hand, setTo);
             player.sendMessage(TextUtils.toComponent(
                     StackMorePlugin.getMessageManager().get("stack_success",
                             "%amount%", String.valueOf(setTo - currentAmount),
@@ -136,9 +134,7 @@ public class StackCommand implements CommandExecutor {
 
         int absorbed = StackCommandHelper.absorbFromPlayer(player, material, toAdd);
         int newTotal = currentAmount + absorbed;
-        StackItemManager.setAmount(hand, newTotal);
-        // PDC 修改后需调用 setItemInMainHand 将变更同步到客户端，否则玩家看不到数量更新
-        player.getInventory().setItemInMainHand(hand);
+        StackCommandHelper.updateHandAmount(player, hand, newTotal);
 
         String msgPath = newTotal >= maxSize ? "stack_limit" : "stack_success";
         player.sendMessage(TextUtils.toComponent(

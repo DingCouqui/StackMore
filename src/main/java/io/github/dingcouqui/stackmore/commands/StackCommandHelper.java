@@ -60,4 +60,18 @@ public class StackCommandHelper {
         }
         return absorbed;
     }
+
+    /**
+     * Set the real amount of a held special stack and write it back to the
+     * player's main hand so the change is synchronized to the client.
+     *
+     * @param player the player holding the item
+     * @param hand   the special stack item in the player's main hand
+     * @param amount the new real amount
+     */
+    public static void updateHandAmount(Player player, ItemStack hand, int amount) {
+        StackItemManager.setAmount(hand, amount);
+        // PDC 修改后需调用 setItemInMainHand 将变更同步到客户端，否则玩家看不到数量更新
+        player.getInventory().setItemInMainHand(hand);
+    }
 }
